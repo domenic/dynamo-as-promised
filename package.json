@@ -13,8 +13,7 @@
     "main": "dynamo-as-promised.js",
     "scripts": {
         "test": "mocha",
-        "lint": "jshint dynamo-as-promised.js --show-non-errors",
-        "cover": "cover run node_modules/mocha/bin/_mocha && cover report html && start ./cover_html/index.html"
+        "lint": "jshint dynamo-as-promised.js --show-non-errors"
     },
     "dependencies": {
         "q": ">= 0.8.4",
@@ -27,7 +26,6 @@
         "sinon-chai": "*",
         "chai-as-promised": ">= 2.2.0",
         "sandboxed-module": "*",
-        "cover": "*",
         "jshint": "*",
         "npm": "*",
         "coffee-script": "*"
