@@ -26,6 +26,7 @@
         "sinon": "*",
         "sinon-chai": "*",
         "chai-as-promised": ">= 2.2.0",
+        "sandboxed-module": "*",
         "cover": "*",
         "jshint": "*",
         "npm": "*",
