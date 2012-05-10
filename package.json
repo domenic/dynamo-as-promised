@@ -1,0 +1,37 @@
+{
+    "name": "dynamo-as-promised",
+    "description": "A promise-based client for Amazon's DynamoDB.",
+    "version": "0.1.0",
+    "author": "Domenic Denicola <domenic@domenicdenicola.com> (http://domenicdenicola.com)",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/domenic/dynamo-as-promised"
+    },
+    "bugs": {
+        "url": "http://github.com/domenic/dynamo-as-promised/issues"
+    },
+    "main": "dynamo-as-promised.js",
+    "scripts": {
+        "test": "mocha",
+        "lint": "jshint dynamo-as-promised.js --show-non-errors",
+        "cover": "cover run node_modules/mocha/bin/_mocha && cover report html && start ./cover_html/index.html"
+    },
+    "dependencies": {
+        "q": ">= 0.8.4",
+        "dynode": ">= 0.4.0"
+    },
+    "devDependencies": {
+        "mocha": ">= 1.0.3",
+        "chai": "*",
+        "sinon": "*",
+        "sinon-chai": "*",
+        "chai-as-promised": ">= 2.2.0",
+        "cover": "*",
+        "jshint": "*",
+        "npm": "*",
+        "coffee-script": "*"
+    },
+    "engines": {
+        "node": "*"
+    }
+}
