@@ -30,8 +30,15 @@ describe "Client", ->
 
         client = new Client(options)
 
+    assertCallsCorrectly = (promiseGetter, dynodeMethod, args...) ->
+        it "should call `dynodeClient.#{dynodeMethod}` with appropriate context and arguments", (done) ->
+            promiseGetter().then(->
+                dynodeClient[dynodeMethod].should.have.been.calledOn(dynodeClient)
+                dynodeClient[dynodeMethod].should.have.been.calledWith(args...)
+            ).should.notify(done)
+
     assertFailsCorrectly = (promiseGetter, dynodeMethod) ->
-        describe "when `dynodeClient." + dynodeMethod + "` fails", ->
+        describe "when `dynodeClient.#{dynodeMethod}` fails", ->
             error = new Error()
 
             beforeEach -> dynodeClient[dynodeMethod].yields(error)
@@ -43,11 +50,7 @@ describe "Client", ->
     describe "getAsync", ->
         doItAsync = -> client.getAsync(table, keys)
 
-        it "should call `dynodeClient.getItem` with appropriate context and arguments", (done) ->
-            doItAsync().then(->
-                dynodeClient.getItem.should.have.been.calledOn(dynodeClient)
-                dynodeClient.getItem.should.have.been.calledWith(table, keys)
-            ).should.notify(done)
+        assertCallsCorrectly(doItAsync, "getItem", table, keys)
 
         describe "when `dynodeClient.getItem` succeeds", ->
             result = { baz: "quux" }
@@ -62,11 +65,7 @@ describe "Client", ->
     describe "putAsync", ->
         doItAsync = -> client.putAsync(table, values)
 
-        it "should call `dynodeClient.putItem` with appropriate context and arguments", (done) ->
-            doItAsync().then(->
-                dynodeClient.putItem.should.have.been.calledOn(dynodeClient)
-                dynodeClient.putItem.should.have.been.calledWith(table, values)
-            ).should.notify(done)
+        assertCallsCorrectly(doItAsync, "putItem", table, values)
 
         describe "when `dynodeClient.putItem` succeeds", ->
             beforeEach -> dynodeClient.putItem.yields(null, {})
@@ -79,11 +78,7 @@ describe "Client", ->
     describe "deleteAsync", ->
         doItAsync = -> client.deleteAsync(table, values)
 
-        it "should call `dynodeClient.deleteItem` with appropriate context and arguments", (done) ->
-            doItAsync().then(->
-                dynodeClient.deleteItem.should.have.been.calledOn(dynodeClient)
-                dynodeClient.deleteItem.should.have.been.calledWith(table, values)
-            ).should.notify(done)
+        assertCallsCorrectly(doItAsync, "deleteItem", table, values)
 
         describe "when `dynodeClient.deleteItem` succeeds", ->
             beforeEach -> dynodeClient.deleteItem.yields(null, {})
@@ -96,11 +91,7 @@ describe "Client", ->
     describe "updateAsync", ->
         doItAsync = -> client.updateAsync(table, keys, values)
 
-        it "should call `dynodeClient.updateItem` with appropriate context and arguments", (done) ->
-            doItAsync().then(->
-                dynodeClient.updateItem.should.have.been.calledOn(dynodeClient)
-                dynodeClient.updateItem.should.have.been.calledWith(table, keys, values)
-            ).should.notify(done)
+        assertCallsCorrectly(doItAsync, "updateItem", table, keys, values)
 
         describe "when `dynodeClient.updateItem` succeeds", ->
             beforeEach -> dynodeClient.updateItem.yields(null, {})
@@ -113,11 +104,7 @@ describe "Client", ->
     describe "scanAsync", ->
         doItAsync = -> client.scanAsync(table, query)
 
-        it "should call `dynodeClient.scan` with appropriate context and arguments", (done) ->
-            doItAsync().then(->
-                dynodeClient.scan.should.have.been.calledOn(dynodeClient)
-                dynodeClient.scan.should.have.been.calledWith(table, query)
-            ).should.notify(done)
+        assertCallsCorrectly(doItAsync, "scan", table, query)
 
         describe "when `dynodeClient.scan` succeeds", ->
             result = [{ baz: "quux" }]
