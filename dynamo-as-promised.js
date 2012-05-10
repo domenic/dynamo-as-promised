@@ -34,20 +34,29 @@ exports.Client = function (options) {
         scanAsync: function (table, query) {
             return dynodeClientScanAsync(table, query).spread(unary);
         },
-        deleteMultipleAsync: function (table, keys) {
+        deleteMultipleAsync: function (table, keysArray) {
             var batches = [];
-            for (var start = 0; start < keys.length; start += BATCH_MAX_SIZE) {
-                batches.push(keys.slice(start, start + BATCH_MAX_SIZE));
+            for (var start = 0; start < keysArray.length; start += BATCH_MAX_SIZE) {
+                batches.push(keysArray.slice(start, start + BATCH_MAX_SIZE));
             }
 
             var deletePromises = batches.map(function (batch) {
                 var writes = {};
-                writes[table] = batch.map(function (key) { return { del: key }; });
+                writes[table] = batch.map(function (keys) { return { del: keys }; });
 
                 return dynodeClientBatchWriteItemAsync(writes);
             });
 
-            return Q.all(deletePromises).then(noop);
+            // TODO: could be a bit smarter, report errors better, etc. See
+            // https://groups.google.com/forum/#!topic/q-continuum/ZMKqLoaQ5j0
+            return Q.allResolved(deletePromises).then(function (resultPromises) {
+                var rejectedPromises = resultPromises.filter(function (promise) { return promise.isRejected(); });
+
+                if (rejectedPromises.length > 0) {
+                    throw new Error(rejectedPromises.length + "/" + deletePromises.length +
+                                    " of the delete batches failed!");
+                }
+            });
         },
     };
 };

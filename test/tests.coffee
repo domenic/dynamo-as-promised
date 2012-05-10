@@ -12,6 +12,7 @@ describe "Client", ->
 
     table = "table"
     keys = { hash: "hash" }
+    keysArray = ({ hash: i } for i in [1..54])
     values = { foo: "bar" }
     query =
         ScanFilter:
@@ -27,7 +28,7 @@ describe "Client", ->
         dynodeClient.deleteItem = sinon.stub().callsArgWith(2, null, null)
         dynodeClient.updateItem = sinon.stub().callsArgWith(3, null, null)
         dynodeClient.scan = sinon.stub().callsArgWith(2, null, null, {})
-        dynodeClient.batchWriteItem = sinon.stub().callsArgWith(2, null, null, {})
+        dynodeClient.batchWriteItem = sinon.stub().callsArgWith(1, null, null, {})
 
         client = new Client(options)
 
@@ -41,7 +42,10 @@ describe "Client", ->
                 error.statusCode = 400
                 error.message = "boo!"
 
-                errorArgPosition = if dynodeMethod is "updateItem" then 3 else 2
+                errorArgPosition = switch dynodeMethod
+                    when "updateItem" then 3
+                    when "batchWriteItem" then 1
+                    else 2
                 dynodeClient[dynodeMethod].callsArgWith(errorArgPosition, error)
 
             it "should reject with that error", (done) ->
@@ -136,3 +140,42 @@ describe "Client", ->
                 doItAsync().should.become(result).notify(done)
 
         assertFailsCorrectly(doItAsync, "scan")
+
+    describe "deleteMultipleAsync", ->
+        doItAsync = -> client.deleteMultipleAsync(table, keysArray)
+
+        [batch1, batch2, batch3] = [{}, {}, {}]
+        batch1[table] = ({ del: hash: i } for i in [1..25])
+        batch2[table] = ({ del: hash: i } for i in [26..50])
+        batch3[table] = ({ del: hash: i } for i in [51..54])
+
+        it "should call `dynodeClient.batchWriteItem` for 25 keys at a time", (done) ->
+            doItAsync().then(->
+                dynodeClient.batchWriteItem.should.have.been.calledThrice
+                dynodeClient.batchWriteItem.should.always.have.been.calledOn(dynodeClient)
+                dynodeClient.batchWriteItem.should.have.been.calledWith(batch1)
+                dynodeClient.batchWriteItem.should.have.been.calledWith(batch2)
+                dynodeClient.batchWriteItem.should.have.been.calledWith(batch3)
+            ).should.notify(done)
+
+        describe "when `dynodeClient.batchWriteItem` succeeds every time", ->
+            beforeEach -> dynodeClient.batchWriteItem.callsArgWith(1, null, null, {})
+
+            it "should fulfill with `undefined`", (done) ->
+                doItAsync().should.become(undefined).notify(done)
+
+        describe "when `dynodeClient.batchWriteItem` fails every time", ->
+            beforeEach -> dynodeClient.batchWriteItem.callsArgWith(1, new Error(), null, null)
+
+            it "should reject, mentioning that all batches failed", (done) ->
+                doItAsync().should.be.rejected.with("3/3").notify(done)
+
+        describe "when `dynodeClient.batchWriteItem` fails once out of three times", ->
+            counter = 0
+
+            beforeEach -> dynodeClient.batchWriteItem.withArgs(batch1).callsArgWith(1, error, null, null)
+                                                     .withArgs(batch2).callsArgWith(1, null, null, {})
+                                                     .withArgs(batch3).callsArgWith(1, null, null, {})
+
+            it "should reject, mentioning that 1/3 batches failed", (done) ->
+                doItAsync().should.be.rejected.with("1/3").notify(done)
