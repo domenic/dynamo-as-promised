@@ -20,33 +20,21 @@ describe "Client", ->
                 AttributeValueList: [{ "S": "bar" }]
                 ComparisonOperator: "EQ"
 
-    error = null
-
     beforeEach ->
-        dynodeClient.getItem = sinon.stub().callsArgWith(2, null, null, {})
-        dynodeClient.putItem = sinon.stub().callsArgWith(2, null, null)
-        dynodeClient.deleteItem = sinon.stub().callsArgWith(2, null, null)
+        dynodeClient.getItem = sinon.stub().yields(null, null, {})
+        dynodeClient.putItem = sinon.stub().yields(null, null)
+        dynodeClient.deleteItem = sinon.stub().yields(null, null)
         dynodeClient.updateItem = sinon.stub().callsArgWith(3, null, null)
-        dynodeClient.scan = sinon.stub().callsArgWith(2, null, null, {})
+        dynodeClient.scan = sinon.stub().yields(null, null, {})
         dynodeClient.batchWriteItem = sinon.stub().callsArgWith(1, null, null, {})
 
         client = new Client(options)
 
     assertFailsCorrectly = (promiseGetter, dynodeMethod) ->
         describe "when `dynodeClient." + dynodeMethod + "` fails", ->
-            error = null
+            error = new Error()
 
-            beforeEach ->
-                error = new Error()
-                error.name = "AmazonError"
-                error.statusCode = 400
-                error.message = "boo!"
-
-                errorArgPosition = switch dynodeMethod
-                    when "updateItem" then 3
-                    when "batchWriteItem" then 1
-                    else 2
-                dynodeClient[dynodeMethod].callsArgWith(errorArgPosition, error)
+            beforeEach -> dynodeClient[dynodeMethod].yields(error)
 
             it "should reject with that error", (done) ->
                 promiseGetter().should.be.rejected.with(error).notify(done)
@@ -64,7 +52,7 @@ describe "Client", ->
         describe "when `dynodeClient.getItem` succeeds", ->
             result = { baz: "quux" }
 
-            beforeEach -> dynodeClient.getItem.callsArgWith(2, null, result, {})
+            beforeEach -> dynodeClient.getItem.yields(null, result, {})
 
             it "should fulfill with the result", (done) ->
                 doItAsync().should.become(result).notify(done)
@@ -81,7 +69,7 @@ describe "Client", ->
             ).should.notify(done)
 
         describe "when `dynodeClient.putItem` succeeds", ->
-            beforeEach -> dynodeClient.putItem.callsArgWith(2, null, {})
+            beforeEach -> dynodeClient.putItem.yields(null, {})
 
             it "should fulfill with `undefined`", (done) ->
                 doItAsync().should.become(undefined).notify(done)
@@ -98,7 +86,7 @@ describe "Client", ->
             ).should.notify(done)
 
         describe "when `dynodeClient.deleteItem` succeeds", ->
-            beforeEach -> dynodeClient.deleteItem.callsArgWith(2, null, {})
+            beforeEach -> dynodeClient.deleteItem.yields(null, {})
 
             it "should fulfill with `undefined`", (done) ->
                 doItAsync().should.become(undefined).notify(done)
@@ -115,7 +103,7 @@ describe "Client", ->
             ).should.notify(done)
 
         describe "when `dynodeClient.updateItem` succeeds", ->
-            beforeEach -> dynodeClient.updateItem.callsArgWith(3, null, {})
+            beforeEach -> dynodeClient.updateItem.yields(null, {})
 
             it "should fulfill with `undefined`", (done) ->
                 doItAsync().should.become(undefined).notify(done)
@@ -134,7 +122,7 @@ describe "Client", ->
         describe "when `dynodeClient.scan` succeeds", ->
             result = [{ baz: "quux" }]
 
-            beforeEach -> dynodeClient.scan.callsArgWith(2, null, result, {})
+            beforeEach -> dynodeClient.scan.yields(null, result, {})
 
             it "should fulfill with the array of results", (done) ->
                 doItAsync().should.become(result).notify(done)
@@ -159,13 +147,13 @@ describe "Client", ->
             ).should.notify(done)
 
         describe "when `dynodeClient.batchWriteItem` succeeds every time", ->
-            beforeEach -> dynodeClient.batchWriteItem.callsArgWith(1, null, null, {})
+            beforeEach -> dynodeClient.batchWriteItem.yields(null, null, {})
 
             it "should fulfill with `undefined`", (done) ->
                 doItAsync().should.become(undefined).notify(done)
 
         describe "when `dynodeClient.batchWriteItem` fails every time", ->
-            beforeEach -> dynodeClient.batchWriteItem.callsArgWith(1, new Error(), null, null)
+            beforeEach -> dynodeClient.batchWriteItem.yields(new Error(), null, null)
 
             it "should reject, mentioning that all batches failed", (done) ->
                 doItAsync().should.be.rejected.with("3/3").notify(done)
@@ -173,9 +161,9 @@ describe "Client", ->
         describe "when `dynodeClient.batchWriteItem` fails once out of three times", ->
             counter = 0
 
-            beforeEach -> dynodeClient.batchWriteItem.withArgs(batch1).callsArgWith(1, error, null, null)
-                                                     .withArgs(batch2).callsArgWith(1, null, null, {})
-                                                     .withArgs(batch3).callsArgWith(1, null, null, {})
+            beforeEach -> dynodeClient.batchWriteItem.withArgs(batch1).yields(new Error(), null, null)
+                                                     .withArgs(batch2).yields(null, null, {})
+                                                     .withArgs(batch3).yields(null, null, {})
 
             it "should reject, mentioning that 1/3 batches failed", (done) ->
                 doItAsync().should.be.rejected.with("1/3").notify(done)
