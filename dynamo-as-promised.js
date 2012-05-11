@@ -19,30 +19,30 @@ exports.Client = function (options) {
     var dynodeClientBatchWriteItemAsync = Q.nbind(dynodeClient.batchWriteItem, dynodeClient);
 
     return {
-        getAsync: function (table, keys) {
-            return dynodeClientGetItemAsync(table, keys).spread(unary);
+        getAsync: function (table, key) {
+            return dynodeClientGetItemAsync(table, key).spread(unary);
         },
         putAsync: function (table, values) {
             return dynodeClientPutItemAsync(table, values).then(noop);
         },
-        deleteAsync: function (table, keys) {
-            return dynodeClientDeleteItemAsync(table, keys).then(noop);
+        deleteAsync: function (table, key) {
+            return dynodeClientDeleteItemAsync(table, key).then(noop);
         },
-        updateAsync: function (table, keys, values) {
-            return dynodeClientUpdateItemAsync(table, keys, values).then(noop);
+        updateAsync: function (table, key, values) {
+            return dynodeClientUpdateItemAsync(table, key, values).then(noop);
         },
         scanAsync: function (table, query) {
             return dynodeClientScanAsync(table, query).spread(unary);
         },
-        deleteMultipleAsync: function (table, keysArray) {
+        deleteMultipleAsync: function (table, keys) {
             var batches = [];
-            for (var start = 0; start < keysArray.length; start += BATCH_MAX_SIZE) {
-                batches.push(keysArray.slice(start, start + BATCH_MAX_SIZE));
+            for (var start = 0; start < keys.length; start += BATCH_MAX_SIZE) {
+                batches.push(keys.slice(start, start + BATCH_MAX_SIZE));
             }
 
             var deletePromises = batches.map(function (batch) {
                 var writes = {};
-                writes[table] = batch.map(function (keys) { return { del: keys }; });
+                writes[table] = batch.map(function (key) { return { del: key }; });
 
                 return dynodeClientBatchWriteItemAsync(writes);
             });

@@ -11,8 +11,8 @@ describe "Client", ->
     options = { accessKeyId: "AWSAccessKey", secretAccessKey: "SecretAccessKey" }
 
     table = "table"
-    keys = { hash: "hash" }
-    keysArray = ({ hash: i } for i in [1..54])
+    key = { hash: "hash" }
+    keys = ({ hash: i } for i in [1..54])
     values = { foo: "bar" }
     query =
         ScanFilter:
@@ -48,9 +48,9 @@ describe "Client", ->
 
 
     describe "getAsync", ->
-        doItAsync = -> client.getAsync(table, keys)
+        doItAsync = -> client.getAsync(table, key)
 
-        assertCallsCorrectly(doItAsync, "getItem", table, keys)
+        assertCallsCorrectly(doItAsync, "getItem", table, key)
 
         describe "when `dynodeClient.getItem` succeeds", ->
             result = { baz: "quux" }
@@ -89,9 +89,9 @@ describe "Client", ->
         assertFailsCorrectly(doItAsync, "deleteItem");
 
     describe "updateAsync", ->
-        doItAsync = -> client.updateAsync(table, keys, values)
+        doItAsync = -> client.updateAsync(table, key, values)
 
-        assertCallsCorrectly(doItAsync, "updateItem", table, keys, values)
+        assertCallsCorrectly(doItAsync, "updateItem", table, key, values)
 
         describe "when `dynodeClient.updateItem` succeeds", ->
             beforeEach -> dynodeClient.updateItem.yields(null, {})
@@ -117,14 +117,14 @@ describe "Client", ->
         assertFailsCorrectly(doItAsync, "scan")
 
     describe "deleteMultipleAsync", ->
-        doItAsync = -> client.deleteMultipleAsync(table, keysArray)
+        doItAsync = -> client.deleteMultipleAsync(table, keys)
 
         [batch1, batch2, batch3] = [{}, {}, {}]
         batch1[table] = ({ del: hash: i } for i in [1..25])
         batch2[table] = ({ del: hash: i } for i in [26..50])
         batch3[table] = ({ del: hash: i } for i in [51..54])
 
-        it "should call `dynodeClient.batchWriteItem` for 25 keys at a time", (done) ->
+        it "should call `dynodeClient.batchWriteItem` for 25 key at a time", (done) ->
             doItAsync().then(->
                 dynodeClient.batchWriteItem.should.have.been.calledThrice
                 dynodeClient.batchWriteItem.should.always.have.been.calledOn(dynodeClient)
