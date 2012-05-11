@@ -3,10 +3,11 @@
 var dynode = require("dynode");
 var Q = require("q");
 
+// See http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_BatchWriteItem.html
 var BATCH_MAX_SIZE = 25;
 
-function noop() {}
-function unary(x) { return x; }
+function noop() {}              // Used to swallow returned metadata from dynode
+function unary(x) { return x; } // Used with `spread` to transform (data, metadata) pairs from dynode into just data
 
 exports.Client = function (options) {
     var dynodeClient = new dynode.Client(options);
