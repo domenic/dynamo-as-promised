@@ -17,19 +17,19 @@
         "lint": "jshint dynamo-as-promised.js --show-non-errors"
     },
     "dependencies": {
-        "q": ">= 0.8.4",
+        "q": ">= 0.8.5",
         "dynode": ">= 0.5.0"
     },
     "devDependencies": {
-        "mocha": ">= 1.0.3",
-        "chai": "*",
+        "mocha": ">= 1.2.0",
+        "chai": ">= 1.0.4",
         "sinon": ">= 1.3.4",
-        "sinon-chai": ">= 1.3.1",
-        "chai-as-promised": ">= 2.2.0",
+        "sinon-chai": ">= 2.1.2",
+        "chai-as-promised": ">= 3.2.1",
         "sandboxed-module": ">= 0.1.3",
-        "jshint": ">= 0.7.0",
+        "jshint": ">= 0.7.1",
         "npm": "*",
-        "coffee-script": ">= 1.3.1"
+        "coffee-script": ">= 1.3.3"
     },
     "engines": {
         "node": "*"
