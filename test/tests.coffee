@@ -24,9 +24,9 @@ describe "Client", ->
         dynodeClient.getItem = sinon.stub().yields(null, null, {})
         dynodeClient.putItem = sinon.stub().yields(null, null)
         dynodeClient.deleteItem = sinon.stub().yields(null, null)
-        dynodeClient.updateItem = sinon.stub().callsArgWith(3, null, null)
+        dynodeClient.updateItem = sinon.stub().yields(null, {})
         dynodeClient.scan = sinon.stub().yields(null, null, {})
-        dynodeClient.batchWriteItem = sinon.stub().callsArgWith(1, null, null, {})
+        dynodeClient.batchWriteItem = sinon.stub().yields(null, null, {})
 
         client = new Client(options)
 
@@ -98,6 +98,24 @@ describe "Client", ->
 
             it "should fulfill with `undefined`", (done) ->
                 doItAsync().should.become(undefined).notify(done)
+
+        assertFailsCorrectly(doItAsync, "updateItem")
+
+    describe "updateAndGetAsync", ->
+        doItAsync = -> client.updateAndGetAsync(table, key, values)
+
+        assertCallsCorrectly(doItAsync, "updateItem", table, key, values, { ReturnValues: "ALL_NEW" })
+
+        describe "when `dynodeClient.updateItem` succeeds", ->
+            beforeEach -> dynodeClient.updateItem.yields(
+                null,
+                Attributes:
+                    foo: "x", bar: "baz"
+                ConsumedCapacityUnits: 1
+            )
+
+            it "should fulfill with the results", (done) ->
+                doItAsync().should.become(foo: "x", bar: "baz").notify(done)
 
         assertFailsCorrectly(doItAsync, "updateItem")
 

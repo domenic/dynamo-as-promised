@@ -34,6 +34,11 @@ Corresponds to DynamoDB's [PutItem][PutItem] command.
 
 Corresponds to DynamoDB's [UpdateItem][UpdateItem] command.
 
+### `client.updateAndGetAsync(table, key, values)`
+
+Corresponds to DynamoDB's [UpdateItem][UpdateItem] command with the `ReturnValues` parameter set to `ALL_NEW`, so that
+it can fulfill with a hash representing the updated item.
+
 ### `client.deleteAsync(table, key)`
 
 Corresponds to DynamoDB's [DeleteItem][DeleteItem] command.

@@ -32,6 +32,9 @@ exports.Client = function (options) {
         updateAsync: function (table, key, values) {
             return dynodeClientUpdateItemAsync(table, key, values).then(noop);
         },
+        updateAndGetAsync: function (table, key, values) {
+            return dynodeClientUpdateItemAsync(table, key, values, { ReturnValues: "ALL_NEW" }).get("Attributes");
+        },
         scanAsync: function (table, query) {
             return dynodeClientScanAsync(table, query).spread(unary);
         },
