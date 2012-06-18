@@ -47,10 +47,10 @@ describe "Client", ->
                 promiseGetter().should.be.rejected.with(error).notify(done)
 
 
-    describe "getAsync", ->
-        doItAsync = -> client.getAsync(table, key)
+    describe "get", ->
+        doIt = -> client.get(table, key)
 
-        assertCallsCorrectly(doItAsync, "getItem", table, key)
+        assertCallsCorrectly(doIt, "getItem", table, key)
 
         describe "when `dynodeClient.getItem` succeeds", ->
             result = { baz: "quux" }
@@ -58,53 +58,53 @@ describe "Client", ->
             beforeEach -> dynodeClient.getItem.yields(null, result, {})
 
             it "should fulfill with the result", (done) ->
-                doItAsync().should.become(result).notify(done)
+                doIt().should.become(result).notify(done)
 
-        assertFailsCorrectly(doItAsync, "getItem")
+        assertFailsCorrectly(doIt, "getItem")
 
-    describe "putAsync", ->
-        doItAsync = -> client.putAsync(table, values)
+    describe "put", ->
+        doIt = -> client.put(table, values)
 
-        assertCallsCorrectly(doItAsync, "putItem", table, values)
+        assertCallsCorrectly(doIt, "putItem", table, values)
 
         describe "when `dynodeClient.putItem` succeeds", ->
             beforeEach -> dynodeClient.putItem.yields(null, {})
 
             it "should fulfill with `undefined`", (done) ->
-                doItAsync().should.become(undefined).notify(done)
+                doIt().should.become(undefined).notify(done)
 
-        assertFailsCorrectly(doItAsync, "putItem")
+        assertFailsCorrectly(doIt, "putItem")
 
-    describe "deleteAsync", ->
-        doItAsync = -> client.deleteAsync(table, values)
+    describe "delete", ->
+        doIt = -> client.delete(table, values)
 
-        assertCallsCorrectly(doItAsync, "deleteItem", table, values)
+        assertCallsCorrectly(doIt, "deleteItem", table, values)
 
         describe "when `dynodeClient.deleteItem` succeeds", ->
             beforeEach -> dynodeClient.deleteItem.yields(null, {})
 
             it "should fulfill with `undefined`", (done) ->
-                doItAsync().should.become(undefined).notify(done)
+                doIt().should.become(undefined).notify(done)
 
-        assertFailsCorrectly(doItAsync, "deleteItem");
+        assertFailsCorrectly(doIt, "deleteItem");
 
-    describe "updateAsync", ->
-        doItAsync = -> client.updateAsync(table, key, values)
+    describe "update", ->
+        doIt = -> client.update(table, key, values)
 
-        assertCallsCorrectly(doItAsync, "updateItem", table, key, values)
+        assertCallsCorrectly(doIt, "updateItem", table, key, values)
 
         describe "when `dynodeClient.updateItem` succeeds", ->
             beforeEach -> dynodeClient.updateItem.yields(null, {})
 
             it "should fulfill with `undefined`", (done) ->
-                doItAsync().should.become(undefined).notify(done)
+                doIt().should.become(undefined).notify(done)
 
-        assertFailsCorrectly(doItAsync, "updateItem")
+        assertFailsCorrectly(doIt, "updateItem")
 
-    describe "updateAndGetAsync", ->
-        doItAsync = -> client.updateAndGetAsync(table, key, values)
+    describe "updateAndGet", ->
+        doIt = -> client.updateAndGet(table, key, values)
 
-        assertCallsCorrectly(doItAsync, "updateItem", table, key, values, { ReturnValues: "ALL_NEW" })
+        assertCallsCorrectly(doIt, "updateItem", table, key, values, { ReturnValues: "ALL_NEW" })
 
         describe "when `dynodeClient.updateItem` succeeds", ->
             beforeEach -> dynodeClient.updateItem.yields(
@@ -115,14 +115,14 @@ describe "Client", ->
             )
 
             it "should fulfill with the results", (done) ->
-                doItAsync().should.become(foo: "x", bar: "baz").notify(done)
+                doIt().should.become(foo: "x", bar: "baz").notify(done)
 
-        assertFailsCorrectly(doItAsync, "updateItem")
+        assertFailsCorrectly(doIt, "updateItem")
 
-    describe "scanAsync", ->
-        doItAsync = -> client.scanAsync(table, query)
+    describe "scan", ->
+        doIt = -> client.scan(table, query)
 
-        assertCallsCorrectly(doItAsync, "scan", table, query)
+        assertCallsCorrectly(doIt, "scan", table, query)
 
         describe "when `dynodeClient.scan` succeeds", ->
             result = [{ baz: "quux" }]
@@ -130,12 +130,12 @@ describe "Client", ->
             beforeEach -> dynodeClient.scan.yields(null, result, {})
 
             it "should fulfill with the array of results", (done) ->
-                doItAsync().should.become(result).notify(done)
+                doIt().should.become(result).notify(done)
 
-        assertFailsCorrectly(doItAsync, "scan")
+        assertFailsCorrectly(doIt, "scan")
 
-    describe "deleteMultipleAsync", ->
-        doItAsync = -> client.deleteMultipleAsync(table, keys)
+    describe "deleteMultiple", ->
+        doIt = -> client.deleteMultiple(table, keys)
 
         [batch1, batch2, batch3] = [{}, {}, {}]
         batch1[table] = ({ del: hash: i } for i in [1..25])
@@ -143,7 +143,7 @@ describe "Client", ->
         batch3[table] = ({ del: hash: i } for i in [51..54])
 
         it "should call `dynodeClient.batchWriteItem` for 25 key at a time", (done) ->
-            doItAsync().then(->
+            doIt().then(->
                 dynodeClient.batchWriteItem.should.have.been.calledThrice
                 dynodeClient.batchWriteItem.should.always.have.been.calledOn(dynodeClient)
                 dynodeClient.batchWriteItem.should.have.been.calledWith(batch1)
@@ -155,13 +155,13 @@ describe "Client", ->
             beforeEach -> dynodeClient.batchWriteItem.yields(null, null, {})
 
             it "should fulfill with `undefined`", (done) ->
-                doItAsync().should.become(undefined).notify(done)
+                doIt().should.become(undefined).notify(done)
 
         describe "when `dynodeClient.batchWriteItem` fails every time", ->
             beforeEach -> dynodeClient.batchWriteItem.yields(new Error(), null, null)
 
             it "should reject, mentioning that all batches failed", (done) ->
-                doItAsync().should.be.rejected.with("3/3").notify(done)
+                doIt().should.be.rejected.with("3/3").notify(done)
 
         describe "when `dynodeClient.batchWriteItem` fails once out of three times", ->
             counter = 0
@@ -171,4 +171,4 @@ describe "Client", ->
                                                      .withArgs(batch3).yields(null, null, {})
 
             it "should reject, mentioning that 1/3 batches failed", (done) ->
-                doItAsync().should.be.rejected.with("1/3").notify(done)
+                doIt().should.be.rejected.with("1/3").notify(done)

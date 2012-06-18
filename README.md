@@ -18,41 +18,35 @@ var client = new Client({accessKeyId: "AWSAccessKey", secretAccessKey: "SecretAc
 
 Then you have the following methods available:
 
-### `client.getAsync(table, key)`
+### `client.get(table, key)`
 
 Corresponds to DynamoDB's [GetItem][GetItem] command. Fulfills with a hash representing the returned item.
 
-### `client.scanAsync(table, query)`
+### `client.scan(table, query)`
 
 Corresponds to DynamoDB's [Scan][Scan] command. Fulfills with an array of hashes representing the returned items.
 
-### `client.putAsync(table, values)`
+### `client.put(table, values)`
 
 Corresponds to DynamoDB's [PutItem][PutItem] command.
 
-### `client.updateAsync(table, key, values)`
+### `client.update(table, key, values)`
 
 Corresponds to DynamoDB's [UpdateItem][UpdateItem] command.
 
-### `client.updateAndGetAsync(table, key, values)`
+### `client.updateAndGet(table, key, values)`
 
 Corresponds to DynamoDB's [UpdateItem][UpdateItem] command with the `ReturnValues` parameter set to `ALL_NEW`, so that
 it can fulfill with a hash representing the updated item.
 
-### `client.deleteAsync(table, key)`
+### `client.delete(table, key)`
 
 Corresponds to DynamoDB's [DeleteItem][DeleteItem] command.
 
-### `client.deleteMultipleAsync(table, keys)`
+### `client.deleteMultiple(table, keys)`
 
 Acts as a wrapper around DynamoDB's [BatchWriteItem][BatchWriteItem] command, taking an array of keys (of any size) and
 using them to perform an appropriate number of delete operations, in batches of 25 at a time (DynamoDB's maximum).
-
----
-
-Wondering about the `Async` suffix? It's a convention I'm borrowing [from the Windows Runtime API][winrt-async], as a
-way of differentiating promise-returning functions from synchronous functions or functions that use Node-style
-callbacks. To be honest, I'm not sure if I like it, so that might go away in the future.
 
 
 
@@ -67,4 +61,3 @@ callbacks. To be honest, I'm not sure if I like it, so that might go away in the
 [DeleteItem]: http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_DeleteItem.html
 [Scan]: http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Scan.html
 [BatchWriteItem]: http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_BatchWriteItem.html
-[winrt-async]: http://msdn.microsoft.com/en-us/library/windows/apps/hh464924.aspx

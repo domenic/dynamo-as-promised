@@ -12,33 +12,33 @@ function unary(x) { return x; } // Used with `spread` to transform (data, metada
 exports.Client = function (options) {
     var dynodeClient = new dynode.Client(options);
 
-    var dynodeClientGetItemAsync = Q.nbind(dynodeClient.getItem, dynodeClient);
-    var dynodeClientPutItemAsync = Q.nbind(dynodeClient.putItem, dynodeClient);
-    var dynodeClientDeleteItemAsync = Q.nbind(dynodeClient.deleteItem, dynodeClient);
-    var dynodeClientUpdateItemAsync = Q.nbind(dynodeClient.updateItem, dynodeClient);
-    var dynodeClientScanAsync = Q.nbind(dynodeClient.scan, dynodeClient);
-    var dynodeClientBatchWriteItemAsync = Q.nbind(dynodeClient.batchWriteItem, dynodeClient);
+    var dynodeClientGetItem = Q.nbind(dynodeClient.getItem, dynodeClient);
+    var dynodeClientPutItem = Q.nbind(dynodeClient.putItem, dynodeClient);
+    var dynodeClientDeleteItem = Q.nbind(dynodeClient.deleteItem, dynodeClient);
+    var dynodeClientUpdateItem = Q.nbind(dynodeClient.updateItem, dynodeClient);
+    var dynodeClientScan = Q.nbind(dynodeClient.scan, dynodeClient);
+    var dynodeClientBatchWriteItem = Q.nbind(dynodeClient.batchWriteItem, dynodeClient);
 
     return {
-        getAsync: function (table, key) {
-            return dynodeClientGetItemAsync(table, key).spread(unary);
+        get: function (table, key) {
+            return dynodeClientGetItem(table, key).spread(unary);
         },
-        putAsync: function (table, values) {
-            return dynodeClientPutItemAsync(table, values).then(noop);
+        put: function (table, values) {
+            return dynodeClientPutItem(table, values).then(noop);
         },
-        deleteAsync: function (table, key) {
-            return dynodeClientDeleteItemAsync(table, key).then(noop);
+        delete: function (table, key) {
+            return dynodeClientDeleteItem(table, key).then(noop);
         },
-        updateAsync: function (table, key, values) {
-            return dynodeClientUpdateItemAsync(table, key, values).then(noop);
+        update: function (table, key, values) {
+            return dynodeClientUpdateItem(table, key, values).then(noop);
         },
-        updateAndGetAsync: function (table, key, values) {
-            return dynodeClientUpdateItemAsync(table, key, values, { ReturnValues: "ALL_NEW" }).get("Attributes");
+        updateAndGet: function (table, key, values) {
+            return dynodeClientUpdateItem(table, key, values, { ReturnValues: "ALL_NEW" }).get("Attributes");
         },
-        scanAsync: function (table, query) {
-            return dynodeClientScanAsync(table, query).spread(unary);
+        scan: function (table, query) {
+            return dynodeClientScan(table, query).spread(unary);
         },
-        deleteMultipleAsync: function (table, keys) {
+        deleteMultiple: function (table, keys) {
             var batches = [];
             for (var start = 0; start < keys.length; start += BATCH_MAX_SIZE) {
                 batches.push(keys.slice(start, start + BATCH_MAX_SIZE));
@@ -48,7 +48,7 @@ exports.Client = function (options) {
                 var writes = {};
                 writes[table] = batch.map(function (key) { return { del: key }; });
 
-                return dynodeClientBatchWriteItemAsync(writes);
+                return dynodeClientBatchWriteItem(writes);
             });
 
             // TODO: could be a bit smarter, report errors better, etc. See
