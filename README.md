@@ -1,8 +1,8 @@
 # A Promise-Based DynamoDB Client
 
 **Dynamo as Promised** is a client for Amazon's [DynamoDB] that returns [promises][promises-presentation] to represent
-its asynchronous operations. It is primarily a thin adapter around [dynode][dynode] to transform its Node-style
-callback-accepting methods into ones returning [Q][Q] promises.
+its asynchronous operations. It is primarily a thin adapter around [dynode][] to transform its Node-style
+callback-accepting methods into ones returning [Q][] promises.
 
 This is very much an alpha release: it only supports the small subset of the DynamoDB API that I have found necessary
 for other projects. Pull requests and fixes welcome!
@@ -13,39 +13,39 @@ First, get a client:
 
 ```js
 var Client = require("dynode-as-promised").Client;
-var client = new Client({accessKeyId: "AWSAccessKey", secretAccessKey: "SecretAccessKey"});
+var client = new Client({ accessKeyId: "AWSAccessKey", secretAccessKey: "SecretAccessKey" });
 ```
 
 Then you have the following methods available:
 
 ### `client.get(table, key)`
 
-Corresponds to DynamoDB's [GetItem][GetItem] command. Fulfills with a hash representing the returned item.
+Corresponds to DynamoDB's [GetItem][] command. Fulfills with a hash representing the returned item.
 
 ### `client.scan(table, query)`
 
-Corresponds to DynamoDB's [Scan][Scan] command. Fulfills with an array of hashes representing the returned items.
+Corresponds to DynamoDB's [Scan][] command. Fulfills with an array of hashes representing the returned items.
 
 ### `client.put(table, values)`
 
-Corresponds to DynamoDB's [PutItem][PutItem] command.
+Corresponds to DynamoDB's [PutItem][] command.
 
 ### `client.update(table, key, values)`
 
-Corresponds to DynamoDB's [UpdateItem][UpdateItem] command.
+Corresponds to DynamoDB's [UpdateItem][] command.
 
 ### `client.updateAndGet(table, key, values)`
 
-Corresponds to DynamoDB's [UpdateItem][UpdateItem] command with the `ReturnValues` parameter set to `ALL_NEW`, so that
+Corresponds to DynamoDB's [UpdateItem][] command with the `ReturnValues` parameter set to `ALL_NEW`, so that
 it can fulfill with a hash representing the updated item.
 
 ### `client.delete(table, key)`
 
-Corresponds to DynamoDB's [DeleteItem][DeleteItem] command.
+Corresponds to DynamoDB's [DeleteItem][] command.
 
 ### `client.deleteMultiple(table, keys)`
 
-Acts as a wrapper around DynamoDB's [BatchWriteItem][BatchWriteItem] command, taking an array of keys (of any size) and
+Acts as a wrapper around DynamoDB's [BatchWriteItem][] command, taking an array of keys (of any size) and
 using them to perform an appropriate number of delete operations, in batches of 25 at a time (DynamoDB's maximum).
 
 
