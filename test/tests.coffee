@@ -30,6 +30,7 @@ describe "Client", ->
         dynodeClient.deleteItem = sinon.stub().yields(null, null)
         dynodeClient.updateItem = sinon.stub().yields(null, {})
         dynodeClient.scan = sinon.stub().yields(null, null, {})
+        dynodeClient.query = sinon.stub().yields(null, {})
         dynodeClient.batchWriteItem = sinon.stub().yields(null, null, {})
 
         client = new Client(options)
@@ -122,6 +123,25 @@ describe "Client", ->
                 doIt().should.become(foo: "x", bar: "baz").notify(done)
 
         assertFailsCorrectly(doIt, "updateItem")
+
+    describe "query", ->
+        doIt = -> client.query(table, key.hash)
+
+        assertCallsCorrectly(doIt, "query", table, key.hash)
+
+        describe "when `dynodeClient.query` succeeds", ->
+            items = [{ baz: "quux" }]
+            result =
+                Count: 1
+                Items: items
+                ConsumedCapacityUnits: 1
+
+            beforeEach -> dynodeClient.query.yields(null, result)
+
+            it "should fulfill with the array of results", (done) ->
+                doIt().should.become(items).notify(done)
+
+        assertFailsCorrectly(doIt, "query")
 
     describe "scan", ->
         doIt = -> client.scan(table, query)

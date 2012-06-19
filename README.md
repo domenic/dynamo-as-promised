@@ -22,6 +22,10 @@ Then you have the following methods available:
 
 Corresponds to DynamoDB's [GetItem][] command. Fulfills with a hash representing the returned item.
 
+### `client.query(table, hash)`
+
+Corresponds to DynamoDB's [Query][] command. Fulfills with an array of hashes representing the returned items.
+
 ### `client.scan(table, query)`
 
 Corresponds to DynamoDB's [Scan][] command. Fulfills with an array of hashes representing the returned items.
@@ -59,5 +63,6 @@ using them to perform an appropriate number of delete operations, in batches of 
 [PutItem]: http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_PutItem.html
 [UpdateItem]: http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_UpdateItem.html
 [DeleteItem]: http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_DeleteItem.html
+[Query]: http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Query.html
 [Scan]: http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_Scan.html
 [BatchWriteItem]: http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_BatchWriteItem.html

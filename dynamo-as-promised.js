@@ -17,6 +17,7 @@ exports.Client = function (options) {
     var dynodeClientDeleteItem = Q.nbind(dynodeClient.deleteItem, dynodeClient);
     var dynodeClientUpdateItem = Q.nbind(dynodeClient.updateItem, dynodeClient);
     var dynodeClientScan = Q.nbind(dynodeClient.scan, dynodeClient);
+    var dynodeClientQuery = Q.nbind(dynodeClient.query, dynodeClient);
     var dynodeClientBatchWriteItem = Q.nbind(dynodeClient.batchWriteItem, dynodeClient);
 
     return {
@@ -34,6 +35,9 @@ exports.Client = function (options) {
         },
         updateAndGet: function (table, key, values) {
             return dynodeClientUpdateItem(table, key, values, { ReturnValues: "ALL_NEW" }).get("Attributes");
+        },
+        query: function (table, hash) {
+            return dynodeClientQuery(table, hash).get("Items");
         },
         scan: function (table, query) {
             return dynodeClientScan(table, query).spread(unary);
