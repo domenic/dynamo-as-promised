@@ -51,14 +51,14 @@ exports.Client = function (options) {
                 return dynodeClientBatchWriteItem(writes);
             });
 
-            // TODO: could be a bit smarter, report errors better, etc. See
-            // https://groups.google.com/forum/#!topic/q-continuum/ZMKqLoaQ5j0
             return Q.allResolved(deletePromises).then(function (resultPromises) {
                 var rejectedPromises = resultPromises.filter(function (promise) { return promise.isRejected(); });
 
                 if (rejectedPromises.length > 0) {
-                    throw new Error(rejectedPromises.length + "/" + deletePromises.length +
-                                    " of the delete batches failed!");
+                    var error = new Error(rejectedPromises.length + "/" + deletePromises.length +
+                                          " of the delete batches failed!");
+                    error.errors = rejectedPromises.map(function (promise) { return promise.valueOf().exception; });
+                    throw error;
                 }
             });
         },

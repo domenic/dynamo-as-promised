@@ -5,7 +5,11 @@ sandboxedModule = require("sandboxed-module")
 
 describe "Client", ->
     dynodeClient = {}
-    { Client } = sandboxedModule.require("..", requires: dynode: Client: sinon.spy(-> dynodeClient))
+    { Client } = sandboxedModule.require(
+        "..",
+        requires: { dynode: Client: sinon.spy(-> dynodeClient) },
+        globals: { Error: Error }
+    )
 
     client = null
     options = { accessKeyId: "AWSAccessKey", secretAccessKey: "SecretAccessKey" }
@@ -158,17 +162,29 @@ describe "Client", ->
                 doIt().should.become(undefined).notify(done)
 
         describe "when `dynodeClient.batchWriteItem` fails every time", ->
-            beforeEach -> dynodeClient.batchWriteItem.yields(new Error(), null, null)
+            beforeEach -> dynodeClient.batchWriteItem.yields(new Error("boo"), null, null)
 
             it "should reject, mentioning that all batches failed", (done) ->
                 doIt().should.be.rejected.with("3/3").notify(done)
 
+            it "should have an errors property on the rejection with the failures", (done) ->
+                doIt().fail((err) ->
+                    err.should.have.property("errors")
+                    err.errors.should.deep.equal([new Error("boo"), new Error("boo"), new Error("boo")])
+                ).should.notify(done)
+
         describe "when `dynodeClient.batchWriteItem` fails once out of three times", ->
             counter = 0
 
-            beforeEach -> dynodeClient.batchWriteItem.withArgs(batch1).yields(new Error(), null, null)
+            beforeEach -> dynodeClient.batchWriteItem.withArgs(batch1).yields(new Error("aaah"), null, null)
                                                      .withArgs(batch2).yields(null, null, {})
                                                      .withArgs(batch3).yields(null, null, {})
 
             it "should reject, mentioning that 1/3 batches failed", (done) ->
                 doIt().should.be.rejected.with("1/3").notify(done)
+
+            it "should have an errors property on the rejection with the failure", (done) ->
+                doIt().fail((err) ->
+                    err.should.have.property("errors")
+                    err.errors.should.deep.equal([new Error("aaah")])
+                ).should.notify(done)
