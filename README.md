@@ -26,7 +26,7 @@ Corresponds to DynamoDB's [GetItem][] command. Fulfills with a hash representing
 
 Corresponds to DynamoDB's [Query][] command. Fulfills with an array of hashes representing the returned items.
 
-### `client.scan(table, query)`
+### `client.scan(table, options)`
 
 Corresponds to DynamoDB's [Scan][] command. Fulfills with an array of hashes representing the returned items.
 

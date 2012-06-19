@@ -18,7 +18,7 @@ describe "Client", ->
     key = { hash: "hash" }
     keys = ({ hash: i } for i in [1..54])
     values = { foo: "bar" }
-    query =
+    scanOptions =
         ScanFilter:
             foo:
                 AttributeValueList: [{ "S": "bar" }]
@@ -144,9 +144,9 @@ describe "Client", ->
         assertFailsCorrectly(doIt, "query")
 
     describe "scan", ->
-        doIt = -> client.scan(table, query)
+        doIt = -> client.scan(table, scanOptions)
 
-        assertCallsCorrectly(doIt, "scan", table, query)
+        assertCallsCorrectly(doIt, "scan", table, scanOptions)
 
         describe "when `dynodeClient.scan` succeeds", ->
             result = [{ baz: "quux" }]
