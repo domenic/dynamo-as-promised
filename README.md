@@ -34,14 +34,16 @@ Corresponds to DynamoDB's [Scan][] command. Fulfills with an array of hashes rep
 
 Corresponds to DynamoDB's [PutItem][] command.
 
-### `client.update(table, key, values)`
+### `client.update(table, key, values[, options])`
 
-Corresponds to DynamoDB's [UpdateItem][] command.
+Corresponds to DynamoDB's [UpdateItem][] command. If `options.onlyIfExists` is true, will send the appropriate
+`"Expected"` options to DynamoDB so as to only perform the update if the keys match those passed in `values`.
 
-### `client.updateAndGet(table, key, values)`
+### `client.updateAndGet(table, key, values[, options])`
 
 Corresponds to DynamoDB's [UpdateItem][] command with the `ReturnValues` parameter set to `ALL_NEW`, so that
-it can fulfill with a hash representing the updated item.
+it can fulfill with a hash representing the updated item. If `options.onlyIfExists` is true, will send the appropriate
+`"Expected"` options to DynamoDB so as to only perform the update if the keys match those passed in `values`.
 
 ### `client.delete(table, key)`
 

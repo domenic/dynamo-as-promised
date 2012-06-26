@@ -1,13 +1,40 @@
 "use strict";
 
 var dynode = require("dynode");
+var addDynamoTypeAnnotations = require("dynode/lib/dynode/types").stringify;
 var Q = require("q");
+var _ = require("underscore");
 
 // See http://docs.amazonwebservices.com/amazondynamodb/latest/developerguide/API_BatchWriteItem.html
 var BATCH_MAX_SIZE = 25;
 
 function noop() {}              // Used to swallow returned metadata from dynode
 function unary(x) { return x; } // Used with `spread` to transform (data, metadata) pairs from dynode into just data
+
+function createDynodeOptions(dynamoAsPromisedOptions, key, values, extraDynodeOptions) {
+    var dynodeOptions = _.clone(extraDynodeOptions || {});
+
+    // If given an `onlyIfExists` option, assemble the `Expected` Dynode option value by looking at the key and values.
+    // Example:
+    //     var key = { hash: "h", range: "r" };
+    //     var values = { h: "H", r: 5 };
+    //     createDynodeOptions({ onlyIfExists: true }, key, values) === {
+    //         Expected: { h: { Value: { S: "H" }, r: { Value: { N: 5 } } }
+    //     };
+    if (typeof dynamoAsPromisedOptions === "object" && dynamoAsPromisedOptions.onlyIfExists) {
+        dynodeOptions.Expected = {};
+
+        var keyNames = typeof key === "string" ? [key] : Object.keys(key).map(function (k) { return key[k]; });
+        keyNames.forEach(function (keyName) {
+            var beforeTypeAnnotations = {};
+            beforeTypeAnnotations[keyName] = values[keyName];
+            var withTypeAnnotations = addDynamoTypeAnnotations(beforeTypeAnnotations);
+            dynodeOptions.Expected[keyName] = { Value: withTypeAnnotations[keyName] };
+        });
+    }
+
+    return dynodeOptions;
+}
 
 exports.Client = function (options) {
     var dynodeClient = new dynode.Client(options);
@@ -30,11 +57,15 @@ exports.Client = function (options) {
         delete: function (table, key) {
             return dynodeClientDeleteItem(table, key).then(noop);
         },
-        update: function (table, key, values) {
-            return dynodeClientUpdateItem(table, key, values).then(noop);
+        update: function (table, key, values, options) {
+            var dynodeOptions = createDynodeOptions(options, key, values);
+
+            return dynodeClientUpdateItem(table, key, values, dynodeOptions).then(noop);
         },
-        updateAndGet: function (table, key, values) {
-            return dynodeClientUpdateItem(table, key, values, { ReturnValues: "ALL_NEW" }).get("Attributes");
+        updateAndGet: function (table, key, values, options) {
+            var dynodeOptions = createDynodeOptions(options, key, values, { ReturnValues: "ALL_NEW" });
+
+            return dynodeClientUpdateItem(table, key, values, dynodeOptions).get("Attributes");
         },
         query: function (table, hash) {
             return dynodeClientQuery(table, hash).get("Items");

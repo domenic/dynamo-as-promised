@@ -15,9 +15,11 @@ describe "Client", ->
     options = { accessKeyId: "AWSAccessKey", secretAccessKey: "SecretAccessKey" }
 
     table = "table"
-    key = { hash: "hash" }
+    key = { hash: "hashKey" }
+    hashAndRangeKey = { hash: "hashKey", range: "rangeKey" }
+    stringKey = "hashKey"
     keys = ({ hash: i } for i in [1..54])
-    values = { foo: "bar" }
+    values = { hashKey: "hashValue", rangeKey: 5, foo: "bar" }
     scanOptions =
         ScanFilter:
             foo:
@@ -106,6 +108,30 @@ describe "Client", ->
 
         assertFailsCorrectly(doIt, "updateItem")
 
+        describe "with onlyIfExists option", ->
+            describe "and a string for the key parameter", ->
+                doIt = -> client.update(table, stringKey, values, { onlyIfExists: true })
+
+                assertCallsCorrectly(doIt, "updateItem", table, stringKey, values, {
+                    Expected: hashKey: Value: S: "hashValue"
+                })
+
+            describe "and an object with a `hash` property for the key parameter", ->
+                doIt = -> client.update(table, key, values, { onlyIfExists: true })
+
+                assertCallsCorrectly(doIt, "updateItem", table, key, values, {
+                    Expected: hashKey: Value: S: "hashValue"
+                })
+
+            describe "and an object with `hash` and `range` properties for the key parameter", ->
+                doIt = -> client.update(table, hashAndRangeKey, values, { onlyIfExists: true })
+
+                assertCallsCorrectly(doIt, "updateItem", table, hashAndRangeKey, values, {
+                    Expected:
+                        hashKey: Value: S: "hashValue"
+                        rangeKey: Value: N: "5"
+                })
+
     describe "updateAndGet", ->
         doIt = -> client.updateAndGet(table, key, values)
 
@@ -123,6 +149,33 @@ describe "Client", ->
                 doIt().should.become(foo: "x", bar: "baz").notify(done)
 
         assertFailsCorrectly(doIt, "updateItem")
+
+        describe "with onlyIfExists option", ->
+            describe "and a string for the key parameter", ->
+                doIt = -> client.updateAndGet(table, stringKey, values, { onlyIfExists: true })
+
+                assertCallsCorrectly(doIt, "updateItem", table, stringKey, values, {
+                    ReturnValues: "ALL_NEW"
+                    Expected: hashKey: Value: S: "hashValue"
+                })
+
+            describe "and an object with a `hash` property for the key parameter", ->
+                doIt = -> client.updateAndGet(table, key, values, { onlyIfExists: true })
+
+                assertCallsCorrectly(doIt, "updateItem", table, key, values, {
+                    ReturnValues: "ALL_NEW"
+                    Expected: hashKey: Value: S: "hashValue"
+                })
+
+            describe "and an object with `hash` and `range` properties for the key parameter", ->
+                doIt = -> client.updateAndGet(table, hashAndRangeKey, values, { onlyIfExists: true })
+
+                assertCallsCorrectly(doIt, "updateItem", table, hashAndRangeKey, values, {
+                    ReturnValues: "ALL_NEW"
+                    Expected:
+                        hashKey: Value: S: "hashValue"
+                        rangeKey: Value: N: "5"
+                })
 
     describe "query", ->
         doIt = -> client.query(table, key.hash)
