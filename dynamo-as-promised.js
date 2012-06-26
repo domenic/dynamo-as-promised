@@ -70,8 +70,8 @@ exports.Client = function (options) {
         query: function (table, hash) {
             return dynodeClientQuery(table, hash).get("Items");
         },
-        scan: function (table, options) {
-            return dynodeClientScan(table, options).spread(unary);
+        scan: function (table, scanOptions) {
+            return dynodeClientScan(table, scanOptions).spread(unary);
         },
         deleteMultiple: function (table, keys) {
             var batches = [];
