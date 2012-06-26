@@ -37,6 +37,8 @@ function createDynodeOptions(dynamoAsPromisedOptions, key, values, extraDynodeOp
 }
 
 exports.Client = function (options) {
+    var that = this;
+
     var dynodeClient = new dynode.Client(options);
 
     var dynodeClientGetItem = Q.nbind(dynodeClient.getItem, dynodeClient);
@@ -47,55 +49,60 @@ exports.Client = function (options) {
     var dynodeClientQuery = Q.nbind(dynodeClient.query, dynodeClient);
     var dynodeClientBatchWriteItem = Q.nbind(dynodeClient.batchWriteItem, dynodeClient);
 
-    return {
-        get: function (table, key) {
-            return dynodeClientGetItem(table, key).spread(unary);
-        },
-        put: function (table, values) {
-            return dynodeClientPutItem(table, values).then(noop);
-        },
-        delete: function (table, key) {
-            return dynodeClientDeleteItem(table, key).then(noop);
-        },
-        update: function (table, key, values, options) {
-            var dynodeOptions = createDynodeOptions(options, key, values);
+    that.get = function (table, key) {
+        return dynodeClientGetItem(table, key).spread(unary);
+    };
 
-            return dynodeClientUpdateItem(table, key, values, dynodeOptions).then(noop);
-        },
-        updateAndGet: function (table, key, values, options) {
-            var dynodeOptions = createDynodeOptions(options, key, values, { ReturnValues: "ALL_NEW" });
+    that.put = function (table, values) {
+        return dynodeClientPutItem(table, values).then(noop);
+    };
 
-            return dynodeClientUpdateItem(table, key, values, dynodeOptions).get("Attributes");
-        },
-        query: function (table, hash) {
-            return dynodeClientQuery(table, hash).get("Items");
-        },
-        scan: function (table, scanOptions) {
-            return dynodeClientScan(table, scanOptions).spread(unary);
-        },
-        deleteMultiple: function (table, keys) {
-            var batches = [];
-            for (var start = 0; start < keys.length; start += BATCH_MAX_SIZE) {
-                batches.push(keys.slice(start, start + BATCH_MAX_SIZE));
+    that.delete = function (table, key) {
+        return dynodeClientDeleteItem(table, key).then(noop);
+    };
+
+    that.update = function (table, key, values, options) {
+        var dynodeOptions = createDynodeOptions(options, key, values);
+
+        return dynodeClientUpdateItem(table, key, values, dynodeOptions).then(noop);
+    };
+
+    that.updateAndGet = function (table, key, values, options) {
+        var dynodeOptions = createDynodeOptions(options, key, values, { ReturnValues: "ALL_NEW" });
+
+        return dynodeClientUpdateItem(table, key, values, dynodeOptions).get("Attributes");
+    };
+
+    that.query = function (table, hash) {
+        return dynodeClientQuery(table, hash).get("Items");
+    };
+
+    that.scan = function (table, scanOptions) {
+        return dynodeClientScan(table, scanOptions).spread(unary);
+    };
+
+    that.deleteMultiple = function (table, keys) {
+        var batches = [];
+        for (var start = 0; start < keys.length; start += BATCH_MAX_SIZE) {
+            batches.push(keys.slice(start, start + BATCH_MAX_SIZE));
+        }
+
+        var deletePromises = batches.map(function (batch) {
+            var writes = {};
+            writes[table] = batch.map(function (key) { return { del: key }; });
+
+            return dynodeClientBatchWriteItem(writes);
+        });
+
+        return Q.allResolved(deletePromises).then(function (resultPromises) {
+            var rejectedPromises = resultPromises.filter(function (promise) { return promise.isRejected(); });
+
+            if (rejectedPromises.length > 0) {
+                var error = new Error(rejectedPromises.length + "/" + deletePromises.length +
+                                      " of the delete batches failed!");
+                error.errors = rejectedPromises.map(function (promise) { return promise.valueOf().exception; });
+                throw error;
             }
-
-            var deletePromises = batches.map(function (batch) {
-                var writes = {};
-                writes[table] = batch.map(function (key) { return { del: key }; });
-
-                return dynodeClientBatchWriteItem(writes);
-            });
-
-            return Q.allResolved(deletePromises).then(function (resultPromises) {
-                var rejectedPromises = resultPromises.filter(function (promise) { return promise.isRejected(); });
-
-                if (rejectedPromises.length > 0) {
-                    var error = new Error(rejectedPromises.length + "/" + deletePromises.length +
-                                          " of the delete batches failed!");
-                    error.errors = rejectedPromises.map(function (promise) { return promise.valueOf().exception; });
-                    throw error;
-                }
-            });
-        },
+        });
     };
 };
