@@ -11,23 +11,27 @@ var BATCH_MAX_SIZE = 25;
 function noop() {}              // Used to swallow returned metadata from dynode
 function unary(x) { return x; } // Used with `spread` to transform (data, metadata) pairs from dynode into just data
 
-function createDynodeOptions(dynamoAsPromisedOptions, key, values, extraDynodeOptions) {
+function createDynodeOptions(dynamoAsPromisedOptions, key, extraDynodeOptions) {
     var dynodeOptions = _.clone(extraDynodeOptions || {});
 
     // If given an `onlyIfExists` option, assemble the `Expected` Dynode option value by looking at the key and values.
     // Example:
-    //     var key = { hash: "h", range: "r" };
-    //     var values = { h: "H", r: 5 };
-    //     createDynodeOptions({ onlyIfExists: true }, key, values) === {
+    //     var key = { hash: "H", range: 5 };
+    //     var dapOptions = { onlyIfExists: { hash: "h", range: "r" } };
+    //     createDynodeOptions(dapOptions, key) === {
     //         Expected: { h: { Value: { S: "H" }, r: { Value: { N: 5 } } }
     //     };
     if (typeof dynamoAsPromisedOptions === "object" && dynamoAsPromisedOptions.onlyIfExists) {
         dynodeOptions.Expected = {};
 
-        var keyNames = typeof key === "string" ? [key] : Object.keys(key).map(function (k) { return key[k]; });
-        keyNames.forEach(function (keyName) {
+        var keyValues = typeof key === "string" ? { hash: key } : key;
+        var keysThatMustExist = typeof dynamoAsPromisedOptions.onlyIfExists === "string" ?
+                                    { hash: dynamoAsPromisedOptions.onlyIfExists } :
+                                    dynamoAsPromisedOptions.onlyIfExists;
+        Object.keys(keysThatMustExist).forEach(function (keyType) {
+            var keyName = keysThatMustExist[keyType];
             var beforeTypeAnnotations = {};
-            beforeTypeAnnotations[keyName] = values[keyName];
+            beforeTypeAnnotations[keyName] = keyValues[keyType];
             var withTypeAnnotations = addDynamoTypeAnnotations(beforeTypeAnnotations);
             dynodeOptions.Expected[keyName] = { Value: withTypeAnnotations[keyName] };
         });
@@ -62,13 +66,13 @@ exports.Client = function (options) {
     };
 
     that.update = function (table, key, values, options) {
-        var dynodeOptions = createDynodeOptions(options, key, values);
+        var dynodeOptions = createDynodeOptions(options, key);
 
         return dynodeClientUpdateItem(table, key, values, dynodeOptions).then(noop);
     };
 
     that.updateAndGet = function (table, key, values, options) {
-        var dynodeOptions = createDynodeOptions(options, key, values, { ReturnValues: "ALL_NEW" });
+        var dynodeOptions = createDynodeOptions(options, key, { ReturnValues: "ALL_NEW" });
 
         return dynodeClientUpdateItem(table, key, values, dynodeOptions).get("Attributes");
     };

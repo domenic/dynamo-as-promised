@@ -43,14 +43,25 @@ Corresponds to DynamoDB's [PutItem][] command.
 
 ### `table.update(key, values[, options])`
 
-Corresponds to DynamoDB's [UpdateItem][] command. If `options.onlyIfExists` is true, will send the appropriate
-`"Expected"` options to DynamoDB so as to only perform the update if the keys match those passed in `values`.
+Corresponds to DynamoDB's [UpdateItem][] command.
+
+The option `onlyIfExists` can be supplied in order to do conditional updates. It takes a key name (or object mapping
+key types to key names), which is used to build the appropriate `"Expected"` parameters to send to DynamoDB. Example:
+
+```js
+customerTable.update("a1b2c3d", { lastName: "Denicola" }, { onlyIfExists: "customerId" });
+customerPurchasesTable.update(
+    { hash: "a1b2c3d", range: "x1y2z3" },
+    { isSatisfied: "true" },
+    { onlyIfExists: { hash: "customerId", range: "purchaseId" } }
+);
+```
 
 ### `table.updateAndGet(key, values[, options])`
 
 Corresponds to DynamoDB's [UpdateItem][] command with the `ReturnValues` parameter set to `ALL_NEW`, so that
-it can fulfill with a hash representing the updated item. If `options.onlyIfExists` is true, will send the appropriate
-`"Expected"` options to DynamoDB so as to only perform the update if the keys match those passed in `values`.
+it can fulfill with a hash representing the updated item. As with `update`, you can supply `options.onlyIfExists` to
+do conditional updates.
 
 ### `table.delete(key)`
 
