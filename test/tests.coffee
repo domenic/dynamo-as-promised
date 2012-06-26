@@ -14,7 +14,7 @@ describe "Client", ->
     client = null
     options = { accessKeyId: "AWSAccessKey", secretAccessKey: "SecretAccessKey" }
 
-    table = "table"
+    tableName = "tableName"
     key = { hash: "hashKey" }
     hashAndRangeKey = { hash: "hashKey", range: "rangeKey" }
     stringKey = "hashKey"
@@ -55,9 +55,9 @@ describe "Client", ->
 
 
     describe "get", ->
-        doIt = -> client.get(table, key)
+        doIt = -> client.get(tableName, key)
 
-        assertCallsCorrectly(doIt, "getItem", table, key)
+        assertCallsCorrectly(doIt, "getItem", tableName, key)
 
         describe "when `dynodeClient.getItem` succeeds", ->
             result = { baz: "quux" }
@@ -70,9 +70,9 @@ describe "Client", ->
         assertFailsCorrectly(doIt, "getItem")
 
     describe "put", ->
-        doIt = -> client.put(table, values)
+        doIt = -> client.put(tableName, values)
 
-        assertCallsCorrectly(doIt, "putItem", table, values)
+        assertCallsCorrectly(doIt, "putItem", tableName, values)
 
         describe "when `dynodeClient.putItem` succeeds", ->
             beforeEach -> dynodeClient.putItem.yields(null, {})
@@ -83,9 +83,9 @@ describe "Client", ->
         assertFailsCorrectly(doIt, "putItem")
 
     describe "delete", ->
-        doIt = -> client.delete(table, values)
+        doIt = -> client.delete(tableName, values)
 
-        assertCallsCorrectly(doIt, "deleteItem", table, values)
+        assertCallsCorrectly(doIt, "deleteItem", tableName, values)
 
         describe "when `dynodeClient.deleteItem` succeeds", ->
             beforeEach -> dynodeClient.deleteItem.yields(null, {})
@@ -96,9 +96,9 @@ describe "Client", ->
         assertFailsCorrectly(doIt, "deleteItem");
 
     describe "update", ->
-        doIt = -> client.update(table, key, values)
+        doIt = -> client.update(tableName, key, values)
 
-        assertCallsCorrectly(doIt, "updateItem", table, key, values)
+        assertCallsCorrectly(doIt, "updateItem", tableName, key, values)
 
         describe "when `dynodeClient.updateItem` succeeds", ->
             beforeEach -> dynodeClient.updateItem.yields(null, {})
@@ -110,32 +110,32 @@ describe "Client", ->
 
         describe "with onlyIfExists option", ->
             describe "and a string for the key parameter", ->
-                doIt = -> client.update(table, stringKey, values, { onlyIfExists: true })
+                doIt = -> client.update(tableName, stringKey, values, { onlyIfExists: true })
 
-                assertCallsCorrectly(doIt, "updateItem", table, stringKey, values, {
+                assertCallsCorrectly(doIt, "updateItem", tableName, stringKey, values, {
                     Expected: hashKey: Value: S: "hashValue"
                 })
 
             describe "and an object with a `hash` property for the key parameter", ->
-                doIt = -> client.update(table, key, values, { onlyIfExists: true })
+                doIt = -> client.update(tableName, key, values, { onlyIfExists: true })
 
-                assertCallsCorrectly(doIt, "updateItem", table, key, values, {
+                assertCallsCorrectly(doIt, "updateItem", tableName, key, values, {
                     Expected: hashKey: Value: S: "hashValue"
                 })
 
             describe "and an object with `hash` and `range` properties for the key parameter", ->
-                doIt = -> client.update(table, hashAndRangeKey, values, { onlyIfExists: true })
+                doIt = -> client.update(tableName, hashAndRangeKey, values, { onlyIfExists: true })
 
-                assertCallsCorrectly(doIt, "updateItem", table, hashAndRangeKey, values, {
+                assertCallsCorrectly(doIt, "updateItem", tableName, hashAndRangeKey, values, {
                     Expected:
                         hashKey: Value: S: "hashValue"
                         rangeKey: Value: N: "5"
                 })
 
     describe "updateAndGet", ->
-        doIt = -> client.updateAndGet(table, key, values)
+        doIt = -> client.updateAndGet(tableName, key, values)
 
-        assertCallsCorrectly(doIt, "updateItem", table, key, values, { ReturnValues: "ALL_NEW" })
+        assertCallsCorrectly(doIt, "updateItem", tableName, key, values, { ReturnValues: "ALL_NEW" })
 
         describe "when `dynodeClient.updateItem` succeeds", ->
             beforeEach -> dynodeClient.updateItem.yields(
@@ -152,25 +152,25 @@ describe "Client", ->
 
         describe "with onlyIfExists option", ->
             describe "and a string for the key parameter", ->
-                doIt = -> client.updateAndGet(table, stringKey, values, { onlyIfExists: true })
+                doIt = -> client.updateAndGet(tableName, stringKey, values, { onlyIfExists: true })
 
-                assertCallsCorrectly(doIt, "updateItem", table, stringKey, values, {
+                assertCallsCorrectly(doIt, "updateItem", tableName, stringKey, values, {
                     ReturnValues: "ALL_NEW"
                     Expected: hashKey: Value: S: "hashValue"
                 })
 
             describe "and an object with a `hash` property for the key parameter", ->
-                doIt = -> client.updateAndGet(table, key, values, { onlyIfExists: true })
+                doIt = -> client.updateAndGet(tableName, key, values, { onlyIfExists: true })
 
-                assertCallsCorrectly(doIt, "updateItem", table, key, values, {
+                assertCallsCorrectly(doIt, "updateItem", tableName, key, values, {
                     ReturnValues: "ALL_NEW"
                     Expected: hashKey: Value: S: "hashValue"
                 })
 
             describe "and an object with `hash` and `range` properties for the key parameter", ->
-                doIt = -> client.updateAndGet(table, hashAndRangeKey, values, { onlyIfExists: true })
+                doIt = -> client.updateAndGet(tableName, hashAndRangeKey, values, { onlyIfExists: true })
 
-                assertCallsCorrectly(doIt, "updateItem", table, hashAndRangeKey, values, {
+                assertCallsCorrectly(doIt, "updateItem", tableName, hashAndRangeKey, values, {
                     ReturnValues: "ALL_NEW"
                     Expected:
                         hashKey: Value: S: "hashValue"
@@ -178,9 +178,9 @@ describe "Client", ->
                 })
 
     describe "query", ->
-        doIt = -> client.query(table, key.hash)
+        doIt = -> client.query(tableName, key.hash)
 
-        assertCallsCorrectly(doIt, "query", table, key.hash)
+        assertCallsCorrectly(doIt, "query", tableName, key.hash)
 
         describe "when `dynodeClient.query` succeeds", ->
             items = [{ baz: "quux" }]
@@ -197,9 +197,9 @@ describe "Client", ->
         assertFailsCorrectly(doIt, "query")
 
     describe "scan", ->
-        doIt = -> client.scan(table, scanOptions)
+        doIt = -> client.scan(tableName, scanOptions)
 
-        assertCallsCorrectly(doIt, "scan", table, scanOptions)
+        assertCallsCorrectly(doIt, "scan", tableName, scanOptions)
 
         describe "when `dynodeClient.scan` succeeds", ->
             result = [{ baz: "quux" }]
@@ -212,12 +212,12 @@ describe "Client", ->
         assertFailsCorrectly(doIt, "scan")
 
     describe "deleteMultiple", ->
-        doIt = -> client.deleteMultiple(table, keys)
+        doIt = -> client.deleteMultiple(tableName, keys)
 
         [batch1, batch2, batch3] = [{}, {}, {}]
-        batch1[table] = ({ del: hash: i } for i in [1..25])
-        batch2[table] = ({ del: hash: i } for i in [26..50])
-        batch3[table] = ({ del: hash: i } for i in [51..54])
+        batch1[tableName] = ({ del: hash: i } for i in [1..25])
+        batch2[tableName] = ({ del: hash: i } for i in [26..50])
+        batch3[tableName] = ({ del: hash: i } for i in [51..54])
 
         it "should call `dynodeClient.batchWriteItem` for 25 key at a time", (done) ->
             doIt().then(->
