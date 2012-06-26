@@ -105,4 +105,17 @@ exports.Client = function (options) {
             }
         });
     };
+
+    var methodNames = Object.keys(that);
+
+    that.table = function (table) {
+        var tableObj = {};
+        methodNames.forEach(function (methodName) {
+            tableObj[methodName] = function () {
+                return that[methodName].apply(that, [table].concat(Array.prototype.slice.call(arguments)));
+            };
+        });
+
+        return tableObj;
+    };
 };

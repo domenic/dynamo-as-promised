@@ -1,6 +1,7 @@
 "use strict"
 
 sinon = require("sinon")
+Q = require("Q")
 sandboxedModule = require("sandboxed-module")
 
 describe "Client", ->
@@ -261,3 +262,20 @@ describe "Client", ->
                     err.should.have.property("errors")
                     err.errors.should.deep.equal([new Error("aaah")])
                 ).should.notify(done)
+
+
+    describe "table", ->
+        table = null
+
+        beforeEach ->
+            table = client.table(tableName)
+
+        for method in ["get", "put", "delete", "update", "updateAndGet", "query", "scan", "deleteMultiple"]
+            describe "when calling #{method} on the generated table", ->
+                beforeEach ->
+                    client[method] = sinon.stub().returns(Q.resolve())
+
+                it "should #{method} on its parent client with the correct table name", (done) ->
+                    table[method]("a", "b", 1, 2).then(->
+                        client[method].should.have.been.calledWithExactly(tableName, "a", "b", 1, 2)
+                    ).should.notify(done)

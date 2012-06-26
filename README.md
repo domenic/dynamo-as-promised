@@ -16,40 +16,47 @@ var Client = require("dynode-as-promised").Client;
 var client = new Client({ accessKeyId: "AWSAccessKey", secretAccessKey: "SecretAccessKey" });
 ```
 
-Then you have the following methods available:
+Optionally, get a table:
 
-### `client.get(table, key)`
+```js
+var table = client.table("TableName");
+```
+
+Then you have the following methods available, either on the table as documented below, or directly on the client by
+passing the table name in as an additional first parameter:
+
+### `table.get(key)`
 
 Corresponds to DynamoDB's [GetItem][] command. Fulfills with a hash representing the returned item.
 
-### `client.query(table, hash)`
+### `table.query(hash)`
 
 Corresponds to DynamoDB's [Query][] command. Fulfills with an array of hashes representing the returned items.
 
-### `client.scan(table, scanOptions)`
+### `table.scan(scanOptions)`
 
 Corresponds to DynamoDB's [Scan][] command. Fulfills with an array of hashes representing the returned items.
 
-### `client.put(table, values)`
+### `table.put(values)`
 
 Corresponds to DynamoDB's [PutItem][] command.
 
-### `client.update(table, key, values[, options])`
+### `table.update(key, values[, options])`
 
 Corresponds to DynamoDB's [UpdateItem][] command. If `options.onlyIfExists` is true, will send the appropriate
 `"Expected"` options to DynamoDB so as to only perform the update if the keys match those passed in `values`.
 
-### `client.updateAndGet(table, key, values[, options])`
+### `table.updateAndGet(key, values[, options])`
 
 Corresponds to DynamoDB's [UpdateItem][] command with the `ReturnValues` parameter set to `ALL_NEW`, so that
 it can fulfill with a hash representing the updated item. If `options.onlyIfExists` is true, will send the appropriate
 `"Expected"` options to DynamoDB so as to only perform the update if the keys match those passed in `values`.
 
-### `client.delete(table, key)`
+### `table.delete(key)`
 
 Corresponds to DynamoDB's [DeleteItem][] command.
 
-### `client.deleteMultiple(table, keys)`
+### `table.deleteMultiple(keys)`
 
 Acts as a wrapper around DynamoDB's [BatchWriteItem][] command, taking an array of keys (of any size) and
 using them to perform an appropriate number of delete operations, in batches of 25 at a time (DynamoDB's maximum).
