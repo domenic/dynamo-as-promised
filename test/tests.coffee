@@ -256,8 +256,6 @@ describe "Client", ->
                 ).should.notify(done)
 
         describe "when `dynodeClient.batchWriteItem` fails once out of three times", ->
-            counter = 0
-
             beforeEach -> dynodeClient.batchWriteItem.withArgs(batch1).yields(new Error("aaah"), null, null)
                                                      .withArgs(batch2).yields(null, null, {})
                                                      .withArgs(batch3).yields(null, null, {})
