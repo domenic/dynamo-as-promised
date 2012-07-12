@@ -1,7 +1,7 @@
 {
     "name": "dynamo-as-promised",
     "description": "A promise-based client for Amazon's DynamoDB.",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "author": "Domenic Denicola <domenic@domenicdenicola.com> (http://domenicdenicola.com)",
     "license": "WTFPL",
     "repository": {
@@ -24,7 +24,7 @@
     "devDependencies": {
         "mocha": ">= 1.3.0",
         "chai": ">= 1.1.1",
-        "sinon": ">= 1.4.0",
+        "sinon": ">= 1.4.2",
         "sinon-chai": ">= 2.1.2",
         "chai-as-promised": ">= 3.2.1",
         "sandboxed-module": ">= 0.1.3",
