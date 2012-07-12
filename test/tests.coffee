@@ -220,6 +220,11 @@ describe "Client", ->
 
         assertFailsCorrectly(doIt, "scan")
 
+        describe "with no arguments", ->
+            doIt = -> client.scan(tableName)
+
+            assertCallsCorrectly(doIt, "scan", tableName, {})
+
     describe "deleteMultiple", ->
         doIt = -> client.deleteMultiple(tableName, keys)
 

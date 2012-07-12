@@ -82,7 +82,7 @@ exports.Client = function (options) {
     };
 
     that.scan = function (table, scanOptions) {
-        return dynodeClientScan(table, scanOptions).spread(unary);
+        return dynodeClientScan(table, scanOptions || {}).spread(unary);
     };
 
     that.deleteMultiple = function (table, keys) {
