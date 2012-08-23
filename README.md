@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/domenic/dynamo-as-promised.png)](http://travis-ci.org/domenic/dynamo-as-promised)
 # A Promise-Based DynamoDB Client
 
 **Dynamo as Promised** is a client for Amazon's [DynamoDB] that returns [promises][promises-presentation] to represent
